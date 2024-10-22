@@ -1,9 +1,10 @@
 package com.amirabadi.chapar_practice_project.controller;
 
-
 import com.amirabadi.chapar_practice_project.data.dto.CustomerDTO;
 import com.amirabadi.chapar_practice_project.service.CustomerService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
@@ -13,64 +14,65 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-import static org.springframework.mock.http.server.reactive.MockServerHttpRequest.delete;
-import static org.springframework.mock.http.server.reactive.MockServerHttpRequest.post;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(CustomerController.class)
 public class CustomerControllerTest {
 
-//    @Autowired
-    private final MockMvc mockMvc;
+    @Autowired
+    private MockMvc mockMvc;
 
     @MockBean
     private CustomerService customerService;
 
-    public CustomerControllerTest(MockMvc mockMvc) {
-        this.mockMvc = mockMvc;
-    }
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Test
     public void testCreateCustomer() throws Exception {
         CustomerDTO customerDTO = new CustomerDTO();
-        customerDTO.setEmail("test@example.com");
-        customerDTO.setFirstname("John");
-        customerDTO.setLastname("Doe");
+        customerDTO.setEmail("hossein.amiri@gamail.com");
+        customerDTO.setFirstname("Hossein");
+        customerDTO.setLastname("Amiri");
 
-        when(customerService.save(any(CustomerDTO.class))).thenReturn(customerDTO);
+//        when(customerService.save(any(CustomerDTO.class))).thenReturn(customerDTO);
 
-        /*mockMvc.perform(post("/customers")
+        mockMvc.perform(post("/customers")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":\"test@example.com\", \"firstname\":\"John\", \"lastname\":\"Doe\"}"))
+                        .content(objectMapper.writeValueAsString(customerDTO)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.email").value("test@example.com"))
-                .andExpect(jsonPath("$.firstname").value("John"))
-                .andExpect(jsonPath("$.lastname").value("Doe"));*/
+                .andExpect(jsonPath("$.email").value("hossein.amiri@gamail.com"))
+                .andExpect(jsonPath("$.firstname").value("Hossein"))
+                .andExpect(jsonPath("$.lastname").value("Amiri"));
     }
 
     @Test
     public void testGetAllCustomers() throws Exception {
         List<CustomerDTO> customerList = new ArrayList<>();
-        customerList.add(new CustomerDTO(UUID.randomUUID(), "test@example.com", "John", "Doe", "Customer description"));
+        customerList.add(new CustomerDTO(UUID.randomUUID(), "hossein.amiri@gamail.com", "Hossein", "Amiri", "Hossein Amiri Customer description"));
 
         when(customerService.findAll()).thenReturn(customerList);
 
-        /*mockMvc.perform(get("/customers"))
+        mockMvc.perform(get("/customers"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].email").value("test@example.com"))
-                .andExpect(jsonPath("$[0].firstname").value("John"));*/
+                .andExpect(jsonPath("$[0].email").value("hossein.amiri@gamail.com"))
+                .andExpect(jsonPath("$[0].firstname").value("Hossein"));
     }
 
     @Test
     public void testDeleteCustomer() throws Exception {
-        UUID customerId = UUID.randomUUID();
+        CustomerDTO customerDTO = new CustomerDTO();
+        customerDTO.setEmail("hossein.amiri@gamail.com");
+        customerDTO.setFirstname("Hossein");
+        customerDTO.setLastname("Amiri");
 
-      /*  mockMvc.perform(delete("/customers/" + customerId))
-                .andExpect(status().isNoContent());*/
+        customerDTO = customerService.save(customerDTO);
 
-        verify(customerService, times(1)).delete(customerId);
+        mockMvc.perform(delete("/customers/" + customerDTO.getId()))
+                .andExpect(status().isNoContent());
+
     }
 }
